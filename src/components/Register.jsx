@@ -1,10 +1,11 @@
 import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Importamos Link
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
+  // Usamos setAuthToken y setUserRole para iniciar sesión automáticamente
   const { setAuthToken, setUserRole } = useContext(AuthContext);
 
   const [email, setEmail] = useState("");
@@ -22,44 +23,71 @@ const Register = () => {
         password,
       });
 
-      // El backend crea y autentica devolviendo token y role
-      const token = response.token || response.data?.token;
-      const role = response.role || response.data?.role;
+      // El backend crea y autentica devolviendo token y role en response.data
+      const token = response.data?.token;
+      const role = response.data?.role;
 
       if (token) {
+        // 1. Actualizar el Contexto
         setAuthToken(token);
         setUserRole(role);
-        localStorage.setItem("jwt", token);
-        localStorage.setItem("userRole", role);
+        
+        // La persistencia en localStorage la maneja el AuthContext
       }
 
-      setStatus("Registration successful!");
-      navigate(role === "ROLE_ADMIN" ? "/admin" : "/create");
+      setStatus("Registration successful! Redirecting...");
+      
+      // Redirigir al usuario estándar a la página de creación
+      navigate("/create"); 
     } catch (error) {
-      setStatus("Registration failed. Please try again.");
-      console.error(error);
+      // Manejo de errores (por ejemplo, email ya existe)
+      const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
+      setStatus(errorMessage);
+      console.error("Registration Error:", error.response || error);
     }
   };
 
   return (
-    <div>
-      <h1>Register</h1>
+    <div className="auth-container"> {/* <--- CLASE DE MINECRAFT AQUÍ */}
+      <h1>¡Únete a la Banda!</h1>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="steve@minecraft.com"
+          />
         </div>
         <div>
-          <label>Name:</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          <label>Nombre:</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            placeholder="Alex/Steve"
+          />
         </div>
         <div>
           <label>Password:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="CreeperAwMan!"
+          />
         </div>
-        <button type="submit">Register</button>
+        <button type="submit">¡A Minar Partituras!</button>
       </form>
-      <p>{status}</p>
+      {status && <p>{status}</p>}
+
+      <p>
+        ¿Ya tienes cuenta? <Link to="/login" style={{ color: 'var(--color-glow)' }}>¡Ingresa!</Link>
+      </p>
     </div>
   );
 };

@@ -1,11 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App"; // Archivo principal con todas las rutas
-import { AuthProvider } from "./context/AuthContext"; // Importa el AuthProvider
-import "./index.css"; // Estilos globales opcionales
+import App from "./App";
+import { AuthProvider } from "./context/AuthContext";
+import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <h1>TEST: React se monta ✅</h1>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 );

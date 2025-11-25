@@ -1,68 +1,129 @@
+/* Importar la fuente de píxeles (similar a la de Minecraft) */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Estilos Globales (Base de Minecraft) */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Colores primarios */
+  --color-dirt: #6b4423; /* Bloque de tierra */
+  --color-grass: #4b8841; /* Bloque de césped */
+  --color-wood: #a07d57; /* Madera/Textura de botón */
+  --color-stone: #a9a9a9; /* Bloque de piedra */
+  --color-text-light: #f0f0f0; /* Texto claro */
+  --color-text-dark: #333333; /* Texto oscuro */
+  --color-accent-green: #38b449; /* Verde de la barra de vida */
+  --color-glow: #ffff55; /* Resplandor amarillo */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  /* Fuente */
+  --font-pixel: 'Press Start 2P', cursive;
 }
 
 body {
+  /* Fondo general que imita el mundo */
+  background-color: var(--color-grass);
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), /* Oscurece un poco */
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><pattern id="g" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="%236b4423" /><rect x="0" y="0" width="5" height="5" fill="%237e542c" /><rect x="5" y="5" width="5" height="5" fill="%237e542c" /></pattern></defs><rect width="100%25" height="100%25" fill="url(%23g)"/></svg>');
+  background-size: 100px 100px;
+  
+  font-family: var(--font-pixel);
+  color: var(--color-text-light);
   margin: 0;
+  padding: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
+  font-size: 10px; /* Tamaño de fuente base para que Press Start 2P no sea demasiado grande */
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Contenedor principal de la app */
+#root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+/* Estilo para Títulos y Encabezados */
+h1, h2 {
+  color: var(--color-glow); /* Títulos que "brillan" */
+  text-shadow: 2px 2px 0 var(--color-text-dark); /* Borde oscuro de píxeles */
+  font-size: 1.8em;
+  margin-bottom: 20px;
+}
+
+/* Contenedores de formulario (Cajas de diálogo/Menú) */
+.auth-container, .form-container {
+  background-color: var(--color-dirt);
+  border: 4px solid var(--color-wood);
+  box-shadow: 
+    inset 0 0 0 2px var(--color-text-dark), /* Borde interior de píxeles */
+    8px 8px 0 var(--color-text-dark); /* Sombra exterior de bloque */
+  padding: 30px 40px;
+  border-radius: 5px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+/* Estilo para los inputs de formulario */
+input[type="email"], 
+input[type="password"], 
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: var(--color-text-light);
+  border: 3px solid var(--color-text-dark);
+  box-shadow: inset 2px 2px 0 var(--color-text-dark);
+  color: var(--color-text-dark);
+  font-family: var(--font-pixel);
+  font-size: 0.8em;
+  box-sizing: border-box; /* Incluye padding en el ancho */
+  border-radius: 0; /* Sin bordes redondeados */
+  -webkit-appearance: none; /* Desactiva el estilo por defecto de iOS */
+}
+
+label {
+  display: block;
+  text-align: left;
+  margin-bottom: 5px;
+  font-size: 0.9em;
+}
+
+/* Estilo para el Botón de Minecraft (Block Button) */
+button, .minecraft-button {
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  background-color: var(--color-wood);
+  color: var(--color-text-light);
+  border: none;
+  border-right: 4px solid var(--color-text-dark);
+  border-bottom: 4px solid var(--color-text-dark);
+  border-top: 4px solid var(--color-text-light);
+  border-left: 4px solid var(--color-text-light);
+  padding: 10px 20px;
+  font-family: var(--font-pixel);
+  font-size: 1em;
+  text-shadow: 1px 1px 0 var(--color-text-dark);
+  transition: transform 0.1s, box-shadow 0.1s;
+  margin-top: 20px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+button:hover, .minecraft-button:hover {
+  background-color: #c49d6c; /* Un poco más claro */
+}
+
+button:active, .minecraft-button:active {
+  /* Efecto de "clic" */
+  border-top: 4px solid var(--color-text-dark);
+  border-left: 4px solid var(--color-text-dark);
+  border-right: 4px solid var(--color-text-light);
+  border-bottom: 4px solid var(--color-text-light);
+  transform: translate(2px, 2px);
+}
+
+/* Mensajes de estado/error */
+p {
+  font-size: 0.8em;
+  margin-top: 15px;
 }
