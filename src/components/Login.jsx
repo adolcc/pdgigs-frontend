@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom"; // Para redirigir al Dashboard
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
@@ -19,13 +19,19 @@ const Login = () => {
         email,
         password,
       });
-      setAuthToken(response.data.token); // Guarda el token en el contexto
-      setUserRole(response.data.role); // Guarda el rol en el contexto
-      localStorage.setItem("jwt", response.data.token); // También guarda el token en localStorage
-      localStorage.setItem("role", response.data.role); // Guarda el rol para persistencia
-      setStatus(`Login successful! Welcome, ${response.data.name}`);
-      // Redirige al dashboard
-      navigate(response.data.role === "ROLE_ADMIN" ? "/admin/dashboard" : "/create");
+
+      const token = response.data.token;
+      const role = response.data.role; // espera "ROLE_ADMIN" o null
+
+      setAuthToken(token);
+      setUserRole(role);
+
+      localStorage.setItem("jwt", token);
+      localStorage.setItem("userRole", role); // clave unificada con AuthContext
+
+      setStatus(`Login successful! Welcome, ${response.data.name || email}`);
+
+      navigate(role === "ROLE_ADMIN" ? "/admin" : "/create");
     } catch (error) {
       setStatus("Login failed. Please check your credentials.");
       console.error(error);
