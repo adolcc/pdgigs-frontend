@@ -34,7 +34,7 @@ const CreatePdf = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/scores/create`, // Endpoint del backend
+        `${import.meta.env.VITE_API_URL}/api/scores`, // Endpoint del backend
         formData,
         {
           headers: {
@@ -43,7 +43,7 @@ const CreatePdf = () => {
           },
         }
       );
-      setStatus(`PDF uploaded successfully! ID: ${response.data.id}`);
+      setStatus("PDF uploaded successfully!");
     } catch (error) {
       setStatus("Upload failed. Please try again.");
       console.error(error);
