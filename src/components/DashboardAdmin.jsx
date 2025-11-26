@@ -1,24 +1,43 @@
-// src/components/DashboardAdmin.jsx
-import React from 'react';
-import CreatePdf from './CreatePdf';
-import PdfList from './PdfList';
+import React, { useState } from 'react';
+import AdminPdfList from './AdminPdfList';
+import UserManagement from './UserManagement';
 
 const DashboardAdmin = () => {
+    const [activeSection, setActiveSection] = useState('scores');
+
     return (
         <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-            <h1>⚒️ Panel de Administración - PDGIGS</h1>
+            <h1>⚒️ Administration Panel</h1>
             
-            {/* Sección para crear PDFs */}
-            <section style={{ marginBottom: '40px' }}>
-                <h2>📤 Subir Nueva Partitura</h2>
-                <CreatePdf />
-            </section>
+            <div className="minecraft-nav" style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <button 
+                    className={`minecraft-button ${activeSection === 'scores' ? 'active' : ''}`}
+                    onClick={() => setActiveSection('scores')}
+                    style={{ marginRight: '10px' }}
+                >
+                    📚 Manage Scores
+                </button>
+                <button 
+                    className={`minecraft-button ${activeSection === 'users' ? 'active' : ''}`}
+                    onClick={() => setActiveSection('users')}
+                >
+                    👥 Manage Users
+                </button>
+            </div>
             
-            {/* Sección para listar PDFs existentes */}
-            <section>
-                <h2>📚 Partituras en el Cofre</h2>
-                <PdfList />
-            </section>
+            {activeSection === 'scores' && (
+                <section>
+                    <h2>📚 All System Scores</h2>
+                    <AdminPdfList />
+                </section>
+            )}
+            
+            {activeSection === 'users' && (
+                <section>
+                    <h2>👥 User Management</h2>
+                    <UserManagement />
+                </section>
+            )}
         </div>
     );
 };

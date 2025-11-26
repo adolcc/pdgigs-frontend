@@ -1,22 +1,20 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext"; // Importamos el contexto para la autenticación
+import { AuthContext } from "../context/AuthContext"; 
 
 const CreatePdf = () => {
-  const [file, setFile] = useState(null); // Estado para el archivo
-  const [title, setTitle] = useState(""); // Metadata opcional
-  const [author, setAuthor] = useState(""); // Metadata opcional
-  const [musicalStyle, setMusicalStyle] = useState(""); // Metadata opcional
-  const [status, setStatus] = useState(""); // Estado para mensajes de error o éxito
+  const [file, setFile] = useState(null); 
+  const [title, setTitle] = useState(""); 
+  const [author, setAuthor] = useState(""); 
+  const [musicalStyle, setMusicalStyle] = useState(""); 
+  const [status, setStatus] = useState(""); 
 
-  const { authToken } = useContext(AuthContext); // Obtener el JWT del contexto de autenticación
+  const { authToken } = useContext(AuthContext); 
 
-  // Maneja el cambio en el campo de archivo
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
 
-  // Maneja el envío del formulario
   const handleSubmit = async (event) => {
     event.preventDefault();
     setStatus("Uploading...");
@@ -27,18 +25,18 @@ const CreatePdf = () => {
     }
 
     const formData = new FormData();
-    formData.append("file", file); // Archivo obligatorio
-    formData.append("title", title); // Metadata opcional
-    formData.append("author", author); // Metadata opcional
-    formData.append("musicalStyle", musicalStyle); // Metadata opcional
+    formData.append("file", file);
+    formData.append("title", title); 
+    formData.append("author", author); 
+    formData.append("musicalStyle", musicalStyle); 
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/scores`, // Endpoint del backend
+        `${import.meta.env.VITE_API_URL}/api/scores`, 
         formData,
         {
           headers: {
-            "Authorization": `Bearer ${authToken}`, // Agregar el token JWT al encabezado
+            "Authorization": `Bearer ${authToken}`, 
             "Content-Type": "multipart/form-data",
           },
         }
@@ -55,28 +53,44 @@ const CreatePdf = () => {
       <h1>Create PDF</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>
-            Select a PDF:
-            <input type="file" accept="application/pdf" onChange={handleFileChange} />
+          <label className="file-input-label">
+            📁 Select PDF File
+            <input 
+              type="file" 
+              accept="application/pdf" 
+              onChange={handleFileChange} 
+              style={{ display: 'none' }}
+            />
           </label>
+          {file && <p style={{ fontSize: '0.8em', marginTop: '5px' }}>Selected: {file.name}</p>}
+          {!file && <p style={{ fontSize: '0.8em', marginTop: '5px', color: '#666' }}>No file selected</p>}
         </div>
         <div>
-          <label>
-            Title (Optional):
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
-          </label>
+          <label>Title (Optional):</label>
+          <input 
+            type="text" 
+            value={title} 
+            onChange={(e) => setTitle(e.target.value)} 
+            className="minecraft-input"
+          />
         </div>
         <div>
-          <label>
-            Author (Optional):
-            <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)} />
-          </label>
+          <label>Author (Optional):</label>
+          <input 
+            type="text" 
+            value={author} 
+            onChange={(e) => setAuthor(e.target.value)} 
+            className="minecraft-input"
+          />
         </div>
         <div>
-          <label>
-            Musical Style (Optional):
-            <input type="text" value={musicalStyle} onChange={(e) => setMusicalStyle(e.target.value)} />
-          </label>
+          <label>Musical Style (Optional):</label>
+          <input 
+            type="text" 
+            value={musicalStyle} 
+            onChange={(e) => setMusicalStyle(e.target.value)} 
+            className="minecraft-input"
+          />
         </div>
         <button type="submit">Create</button>
       </form>

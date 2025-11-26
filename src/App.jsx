@@ -5,38 +5,54 @@ import Register from "./components/Register";
 import RegisterAdmin from "./components/RegisterAdmin";
 import CreatePdf from "./components/CreatePdf";
 import DashboardAdmin from "./components/DashboardAdmin";
+import DashboardUser from "./components/DashboardUser"; // ✅ Nuevo
 import PrivateRoute from "./components/PrivateRoute";
 import Unauthorized from "./components/Unauthorized";
+import { AuthProvider } from "./context/AuthContext"; // ✅ Asegurar que AuthProvider esté aquí
 
 const App = () => (
-  <Router>
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/register-admin" element={<RegisterAdmin />} />
+  <AuthProvider> {/* ✅ Envuelve todo con AuthProvider */}
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/register-admin" element={<RegisterAdmin />} />
 
-      <Route
-        path="/create"
-        element={
-          <PrivateRoute>
-            <CreatePdf />
-          </PrivateRoute>
-        }
-      />
+        {/* ✅ Ruta para usuarios normales */}
+        <Route
+          path="/my-scores"
+          element={
+            <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
+              <DashboardUser />
+            </PrivateRoute>
+          }
+        />
 
-      <Route
-        path="/admin"
-        element={
-          <PrivateRoute role="ROLE_ADMIN">
-            <DashboardAdmin />
-          </PrivateRoute>
-        }
-      />
+        {/* ✅ Ruta para subir PDFs (mantener si la quieres separada) */}
+        <Route
+          path="/create"
+          element={
+            <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
+              <CreatePdf />
+            </PrivateRoute>
+          }
+        />
 
-      <Route path="/unauthorized" element={<Unauthorized />} />
-    </Routes>
-  </Router>
+        {/* ✅ Ruta para admin */}
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute allowedRoles={['ADMIN']}>
+              <DashboardAdmin />
+            </PrivateRoute>
+          }
+        />
+
+        <Route path="/unauthorized" element={<Unauthorized />} />
+      </Routes>
+    </Router>
+  </AuthProvider>
 );
 
 export default App;

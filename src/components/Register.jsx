@@ -1,12 +1,11 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Importamos Link
+import { useNavigate, Link } from "react-router-dom"; 
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
-  // Usamos setAuthToken y setUserRole para iniciar sesión automáticamente
-  const { setAuthToken, setUserRole } = useContext(AuthContext);
+  const { setAuthToken, setUserRole, setUserEmail } = useContext(AuthContext);
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -23,24 +22,22 @@ const Register = () => {
         password,
       });
 
-      // El backend crea y autentica devolviendo token y role en response.data
       const token = response.data?.token;
       const role = response.data?.role;
 
       if (token) {
-        // 1. Actualizar el Contexto
         setAuthToken(token);
         setUserRole(role);
-        
-        // La persistencia en localStorage la maneja el AuthContext
+        setUserEmail(email);
+        localStorage.setItem("jwt", token);
+        localStorage.setItem("userRole", role);
+        localStorage.setItem("userEmail", email);
       }
 
       setStatus("Registration successful! Redirecting...");
-      
-      // Redirigir al usuario estándar a la página de creación
-      navigate("/create"); 
+
+      navigate("/my-scores");
     } catch (error) {
-      // Manejo de errores (por ejemplo, email ya existe)
       const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
       setStatus(errorMessage);
       console.error("Registration Error:", error.response || error);
@@ -49,7 +46,7 @@ const Register = () => {
 
   return (
     <div className="auth-container"> {/* <--- CLASE DE MINECRAFT AQUÍ */}
-      <h1>¡Únete a la Banda!</h1>
+      <h1>Join the Band!</h1>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
@@ -62,7 +59,7 @@ const Register = () => {
           />
         </div>
         <div>
-          <label>Nombre:</label>
+          <label>Name:</label>
           <input
             type="text"
             value={name}
@@ -81,12 +78,12 @@ const Register = () => {
             placeholder="CreeperAwMan!"
           />
         </div>
-        <button type="submit">¡A Minar Partituras!</button>
+        <button type="submit">Start Mining Scores!</button>
       </form>
       {status && <p>{status}</p>}
 
       <p>
-        ¿Ya tienes cuenta? <Link to="/login" style={{ color: 'var(--color-glow)' }}>¡Ingresa!</Link>
+        Already have an account? <Link to="/login" style={{ color: 'var(--color-glow)' }}>Login!</Link>
       </p>
     </div>
   );
