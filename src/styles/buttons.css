@@ -1,0 +1,88 @@
+button, .minecraft-button{
+  cursor:pointer;
+  background-color:var(--color-wood);
+  color:var(--color-text-light);
+  border:none;
+  border-right:4px solid var(--color-text-dark);
+  border-bottom:4px solid var(--color-text-dark);
+  border-top:4px solid var(--color-text-light);
+  border-left:4px solid var(--color-text-light);
+  padding: var(--btn-padding);
+  font-family: 'Press Start 2P', cursive;
+  font-size:var(--btn-font-size);
+  text-shadow:1px 1px 0 var(--color-text-dark);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  margin-top:16px;
+}
+
+button:hover, .minecraft-button:hover{ background-color:#c49d6c; }
+button:active, .minecraft-button:active{
+  border-top:4px solid var(--color-text-dark);
+  border-left:4px solid var(--color-text-dark);
+  border-right:4px solid var(--color-text-light);
+  border-bottom:4px solid var(--color-text-light);
+  transform:translate(2px,2px);
+}
+
+.save-btn{ background-color:var(--color-accent-green); font-size:calc(0.7em * var(--ui-scale)); padding:calc(5px * var(--ui-scale)) calc(10px * var(--ui-scale)); }
+.cancel-btn{ background-color:#ffc107; color:var(--color-text-dark); font-size:calc(0.7em * var(--ui-scale)); padding:calc(5px * var(--ui-scale)) calc(10px * var(--ui-scale)); }
+
+:root{
+  --btn-standard-height: 44px;
+  --btn-standard-min-width: 94px;
+  --btn-icon-size: 44px;
+  --btn-padding-x: 14px;
+  --btn-padding-y: 8px;
+  --btn-font-size-ui: calc(0.95em * var(--ui-scale));
+}
+
+.minecraft-button,
+button.minecraft-button,
+a.minecraft-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  height: var(--btn-standard-height) !important;
+  min-height: var(--btn-standard-height) !important;
+  padding: var(--btn-padding-y) var(--btn-padding-x) !important;
+  min-width: var(--btn-standard-min-width) !important;
+  font-size: var(--btn-font-size-ui) !important;
+  line-height: 1 !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+/* small / icon variants */
+.minecraft-button.small {
+  height: var(--btn-standard-height) !important;
+  padding: 6px 10px !important;
+  min-width: calc(var(--btn-standard-min-width) - 18px) !important;
+  font-size: calc(0.92 * var(--btn-font-size-ui)) !important;
+}
+
+.minecraft-button.small.icon {
+  width: var(--btn-icon-size) !important;
+  min-width: var(--btn-icon-size) !important;
+  height: var(--btn-icon-size) !important;
+  padding: 0 !important;
+  font-size: 18px !important;
+  gap: 0 !important;
+}
+
+.minecraft-button.tight { min-width: 64px !important; padding: 6px 8px !important; height: calc(var(--btn-standard-height) - 6px) !important; }
+
+a.minecraft-button, a.minecraft-button.small { text-decoration: none !important; color: inherit !important; }
+
+.minecraft-button,
+.minecraft-button.small,
+.minecraft-button.small.icon,
+.minecraft-button.tight { box-shadow: 4px 4px 0 rgba(0,0,0,0.25) !important; }
+
+.minecraft-button svg, .minecraft-button img { height: 18px; width: auto; margin-right: 6px; }
+
+/* responsive */
+@media (max-width:640px){
+  :root{ --btn-standard-height: 40px; --btn-standard-min-width: 72px; --btn-icon-size: 40px; }
+  .minecraft-button.small { min-width: 48% !important; height: 40px !important; }
+}

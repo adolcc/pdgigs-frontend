@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import CreatePdf from './CreatePdf';
+import UploadPdf from './UploadPdf';
 import PdfList from './PdfList';
 
 const DashboardUser = () => {
     const [activeSection, setActiveSection] = useState('list');
+    
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const handleUploadSuccess = (uploadedData) => {
+        
+        setActiveSection('list');
+      
+        setRefreshKey(k => k + 1);
+    };
 
     return (
         <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -28,14 +37,14 @@ const DashboardUser = () => {
             {activeSection === 'upload' && (
                 <section>
                     <h2>📤 Upload New Score</h2>
-                    <CreatePdf onUploadSuccess={() => setActiveSection('list')} />
+                    <UploadPdf onUploadSuccess={handleUploadSuccess} />
                 </section>
             )}
             
             {activeSection === 'list' && (
                 <section>
                     <h2>📚 My Scores</h2>
-                    <PdfList />
+                    <PdfList refreshKey={refreshKey} />
                 </section>
             )}
         </div>

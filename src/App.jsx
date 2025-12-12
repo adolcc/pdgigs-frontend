@@ -1,58 +1,59 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import RegisterAdmin from "./components/RegisterAdmin";
-import CreatePdf from "./components/CreatePdf";
+import PdfList from "./components/PdfList";
+import UploadPdf from "./components/UploadPdf";
+import ScoreEdit from "./components/ScoreEdit";
 import DashboardAdmin from "./components/DashboardAdmin";
-import DashboardUser from "./components/DashboardUser"; // ✅ Nuevo
-import PrivateRoute from "./components/PrivateRoute";
-import Unauthorized from "./components/Unauthorized";
-import { AuthProvider } from "./context/AuthContext"; // ✅ Asegurar que AuthProvider esté aquí
 
-const App = () => (
-  <AuthProvider> {/* ✅ Envuelve todo con AuthProvider */}
-    <Router>
+function App() {
+  return (
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/register-admin" element={<RegisterAdmin />} />
-
-        {/* ✅ Ruta para usuarios normales */}
         <Route
           path="/my-scores"
           element={
-            <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-              <DashboardUser />
-            </PrivateRoute>
+            <ProtectedRoute>
+              <PdfList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/upload"
+          element={
+            <ProtectedRoute>
+              <UploadPdf />
+            </ProtectedRoute>
           }
         />
 
-        {/* ✅ Ruta para subir PDFs (mantener si la quieres separada) */}
         <Route
-          path="/create"
+          path="/scores/:id/edit"
           element={
-            <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-              <CreatePdf />
-            </PrivateRoute>
+            <ProtectedRoute>
+              <ScoreEdit />
+            </ProtectedRoute>
           }
         />
 
-        {/* ✅ Ruta para admin */}
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
-            <PrivateRoute allowedRoles={['ADMIN']}>
+            <ProtectedRoute requiredRole="ROLE_ADMIN">
               <DashboardAdmin />
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
 
-        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </Router>
-  </AuthProvider>
-);
+    </BrowserRouter>
+  );
+}
 
 export default App;

@@ -1,46 +1,81 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useCallback } from "react";
 
-// Crea el contexto
-export const AuthContext = createContext();
+export const AuthContext = createContext({
+  authToken: null,
+  userRole: null,
+  userEmail: null,
+  isAuthenticated: false,
+  setAuthToken: () => {},
+  setUserRole: () => {},
+  setUserEmail: () => {},
+  logout: () => {},
+});
 
-// Proveedor del contexto de autenticación
 export const AuthProvider = ({ children }) => {
-  // Estados para el token de sesión (JWT), rol y email del usuario
-  const [authToken, setAuthToken] = useState(localStorage.getItem("jwt") || "");
-  const [userRole, setUserRole] = useState(localStorage.getItem("userRole") || "");
-  const [userEmail, setUserEmail] = useState(localStorage.getItem("userEmail") || ""); // ✅ Nuevo
+  const [authToken, setAuthTokenState] = useState(null);
+  const [userRole, setUserRoleState] = useState(null);
+  const [userEmail, setUserEmailState] = useState(null);
 
-  // Sincroniza con localStorage cuando cambian authToken, userRole o userEmail
   useEffect(() => {
-    console.log("authToken cambió a:", authToken);
-    console.log("userRole cambió a:", userRole);
-    console.log("userEmail cambió a:", userEmail); // ✅ Nuevo
+    const token = localStorage.getItem("jwt");
+    const role = localStorage.getItem("userRole");
+    const email = localStorage.getItem("userEmail");
+    if (token) setAuthTokenState(token);
+    if (role) setUserRoleState(role);
+    if (email) setUserEmailState(email);
+  }, []);
 
-    if (authToken) {
-      localStorage.setItem("jwt", authToken);
+  const setAuthToken = useCallback((token) => {
+    if (token) {
+      localStorage.setItem("jwt", token);
+      setAuthTokenState(token);
     } else {
       localStorage.removeItem("jwt");
+      setAuthTokenState(null);
     }
+  }, []);
 
-    if (userRole) {
-      localStorage.setItem("userRole", userRole);
+  const setUserRole = useCallback((role) => {
+    if (role) {
+      localStorage.setItem("userRole", role);
+      setUserRoleState(role);
     } else {
       localStorage.removeItem("userRole");
+      setUserRoleState(null);
     }
+  }, []);
 
-    if (userEmail) { // ✅ Nuevo
-      localStorage.setItem("userEmail", userEmail);
+  const setUserEmail = useCallback((email) => {
+    if (email) {
+      localStorage.setItem("userEmail", email);
+      setUserEmailState(email);
     } else {
       localStorage.removeItem("userEmail");
+      setUserEmailState(null);
     }
-  }, [authToken, userRole, userEmail]); // ✅ Actualizado
+  }, []);
+
+  const logout = useCallback(() => {
+    setAuthToken(null);
+    setUserRole(null);
+    setUserEmail(null);
+  }, [setAuthToken, setUserRole, setUserEmail]);
+
+  const isAuthenticated = !!authToken;
 
   return (
-    <AuthContext.Provider value={{ 
-      authToken, setAuthToken, 
-      userRole, setUserRole,
-      userEmail, setUserEmail // ✅ Nuevo
-    }}>
+    <AuthContext.Provider
+      value={{
+        authToken,
+        userRole,
+        userEmail,
+        isAuthenticated,
+        setAuthToken,
+        setUserRole,
+        setUserEmail,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

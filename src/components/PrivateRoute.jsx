@@ -1,22 +1,23 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-import { useContext } from "react";
+import React, { useContext } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+
 const PrivateRoute = ({ children, role }) => {
-  const { authToken, userRole } = useContext(AuthContext); // Consume los valores del contexto
+  const { isAuthenticated, authToken, userRole } = useContext(AuthContext);
+  const location = useLocation();
 
-  // Si no hay token, redirige al login
-  if (!authToken) {
-    return <Navigate to="/login" />;
+  if (!isAuthenticated && !authToken) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // Si se requiere un rol específico y no coincide, redirige a una página de no autorizado
-  if (role && role !== userRole) {
-    return <Navigate to="/unauthorized" />;
+  if (role) {
+    const allowed = Array.isArray(role) ? role : [role];
+    if (!allowed.includes(userRole)) {
+      return <Navigate to="/unauthorized" replace />;
+    }
   }
 
-  // Si todo está correcto, renderiza el componente hijo
   return children;
 };
 

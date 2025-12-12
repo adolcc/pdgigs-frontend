@@ -11,8 +11,6 @@ const RegisterAdmin = () => {
     event.preventDefault();
     setStatus("Registering...");
     try {
-      // NOTA: el backend /auth/register no acepta role en el body,
-      // por eso aquí sólo enviamos email, name y password.
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/register`, {
         email,
         name,

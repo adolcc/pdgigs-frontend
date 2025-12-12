@@ -1,0 +1,43 @@
+:root{
+  --status-error: #ff8a80;
+  --status-success-text: #0b3d12;               
+  --status-success: var(--status-success-text);
+  --status-info: #f0c04b;
+  --status-bg-error: rgba(255, 138, 128, 0.12);
+  --status-bg-success: rgba(11, 61, 18, 0.12);   
+  --status-bg-info: rgba(240, 192, 75, 0.08);
+  --status-border-radius: 6px;
+  --status-padding: 10px 12px;
+}
+
+.status-message {
+  display: inline-block;
+  padding: var(--status-padding);
+  border-radius: var(--status-border-radius);
+  font-size: calc(0.85em * var(--ui-scale));
+  line-height: 1.2;
+  box-sizing: border-box;
+  margin: 8px 0;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.12);
+  font-family: 'Press Start 2P', monospace;
+}
+
+.status-message.error {
+  color: var(--status-error);
+  background: var(--status-bg-error);
+  border: 1px solid rgba(255,138,128,0.18);
+}
+
+.status-message.success {
+  color: var(--status-success);
+  background: var(--status-bg-success);
+  border: 1px solid rgba(11,61,18,0.18);
+}
+
+.status-message.info {
+  color: #4a3b00;
+  background: var(--status-bg-info);
+  border: 1px solid rgba(240,192,75,0.12);
+}
+
+.status-message.block { display:block; width:100%; }

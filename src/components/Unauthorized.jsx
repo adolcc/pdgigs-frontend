@@ -2,8 +2,8 @@ import React from "react";
 
 const Unauthorized = () => (
   <div>
-    <h1>No estás autorizado</h1>
-    <p>No tienes permisos para ver esta página.</p>
+    <h1>You are not authorized</h1>
+    <p>You do not have permission to view this page.</p>
   </div>
 );
 

@@ -4,14 +4,11 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
-  // withCredentials: true, // ❌ COMENTA ESTO - puede causar conflictos con Authorization Bearer
   headers: {
-    'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
 
-// Interceptor para agregar el token a cada request
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('jwt');
@@ -31,7 +28,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar respuestas
 axiosInstance.interceptors.response.use(
   (response) => {
     console.log('✅ Response received for:', response.config.url);
@@ -45,12 +41,10 @@ axiosInstance.interceptors.response.use(
       message: error.response?.data?.message || error.message,
     });
     
-    // Si es 401, limpiar token
     if (error.response?.status === 401) {
       console.log('🔒 Unauthorized - clearing tokens');
       localStorage.removeItem('jwt');
       localStorage.removeItem('userRole');
-      // Opcional: redirigir al login
       window.location.href = '/login';
     }
     

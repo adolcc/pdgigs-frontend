@@ -18,11 +18,12 @@ const UserManagement = () => {
     }, []);
 
     const fetchUsers = async () => {
+        setLoading(true);
         try {
             console.log('📡 Fetching users from admin endpoint...');
             const response = await axiosInstance.get('/admin/users');
             console.log('✅ Users loaded:', response.data);
-            setUsers(response.data);
+            setUsers(response.data || []);
         } catch (error) {
             console.error('❌ Error fetching users:', error);
             console.error('❌ Error details:', error.response?.data);
@@ -47,34 +48,34 @@ const UserManagement = () => {
     const promoteUser = async (userId) => {
         try {
             console.log('⬆️ Promoting user to admin:', userId);
-            const response = await axiosInstance.put(`/admin/users/${userId}/role`, {
-                role: 'ROLE_ADMIN' 
+            const response = await axiosInstance.post(`/admin/users/${userId}/role`, {
+                role: 'ROLE_ADMIN'
             });
-            
+
             console.log('✅ User promoted:', response.data);
             showAlert('Success', 'User promoted to admin successfully!', 'success');
-            fetchUsers();
-            
+            await fetchUsers();
         } catch (error) {
             console.error('❌ Error promoting user:', error);
-            showAlert('Promotion Error', 'Error promoting user: ' + (error.response?.data?.message || error.message), 'error');
+            const msg = error.response?.data?.message || error.message || 'Promotion failed';
+            showAlert('Promotion Error', 'Error promoting user: ' + msg, 'error');
         }
     };
 
     const demoteUser = async (userId) => {
         try {
             console.log('⬇️ Demoting admin to user:', userId);
-            const response = await axiosInstance.put(`/admin/users/${userId}/role`, {
-                role: 'ROLE_USER'  
+            const response = await axiosInstance.post(`/admin/users/${userId}/role`, {
+                role: 'ROLE_USER'
             });
-            
+
             console.log('✅ User demoted:', response.data);
             showAlert('Success', 'Admin demoted to user successfully!', 'success');
-            fetchUsers();
-            
+            await fetchUsers();
         } catch (error) {
             console.error('❌ Error demoting user:', error);
-            showAlert('Demotion Error', 'Error demoting user: ' + (error.response?.data?.message || error.message), 'error');
+            const msg = error.response?.data?.message || error.message || 'Demotion failed';
+            showAlert('Demotion Error', 'Error demoting user: ' + msg, 'error');
         }
     };
 
@@ -82,14 +83,14 @@ const UserManagement = () => {
         try {
             console.log('🗑️ Deleting user:', userId);
             await axiosInstance.delete(`/admin/users/${userId}`);
-            
+
             console.log('✅ User deleted');
             showAlert('Success', 'User deleted successfully!', 'success');
-            fetchUsers();
-            
+            await fetchUsers();
         } catch (error) {
             console.error('❌ Error deleting user:', error);
-            showAlert('Delete Error', 'Error deleting user: ' + (error.response?.data?.message || error.message), 'error');
+            const msg = error.response?.data?.message || error.message || 'Delete failed';
+            showAlert('Delete Error', 'Error deleting user: ' + msg, 'error');
         }
     };
 
@@ -142,11 +143,11 @@ const UserManagement = () => {
     };
 
     const getAdminCount = () => {
-        return users.filter(user => user.role === 'ROLE_ADMIN').length;  
+        return users.filter(user => user.role === 'ROLE_ADMIN').length;
     };
 
     const canModifyAdmin = (user) => {
-        if (user.role === 'ROLE_ADMIN' && getAdminCount() <= 1) {  
+        if (user.role === 'ROLE_ADMIN' && getAdminCount() <= 1) {
             return false;
         }
         return true;
@@ -166,7 +167,7 @@ const UserManagement = () => {
             <p style={{ fontSize: '0.7em', marginBottom: '20px' }}>
                 Manage user roles and accounts in the system
             </p>
-            
+
             {users.length === 0 ? (
                 <div className="minecraft-empty">
                     <p>No users in the system!</p>
@@ -198,8 +199,8 @@ const UserManagement = () => {
                                     </td>
                                     <td style={{ border: '2px solid var(--color-text-dark)', padding: '10px', fontSize: '0.7em', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                            {/* Botón promover - solo para usuarios normales */}
-                                            {user.role === 'ROLE_USER' && (  
+                                            {}
+                                            {user.role !== 'ROLE_ADMIN' && (
                                                 <button
                                                     onClick={() => openActionModal(user, 'promote')}
                                                     className="minecraft-button promote-btn"
@@ -208,9 +209,9 @@ const UserManagement = () => {
                                                     ⬆️ Admin
                                                 </button>
                                             )}
-                                            
-                                            {/* Botón degradar - solo para admins y no el último admin */}
-                                            {user.role === 'ROLE_ADMIN' && (  
+
+                                            {}
+                                            {user.role === 'ROLE_ADMIN' && (
                                                 <button
                                                     onClick={() => openActionModal(user, 'demote')}
                                                     className="minecraft-button demote-btn"
@@ -220,13 +221,13 @@ const UserManagement = () => {
                                                     ⬇️ User
                                                 </button>
                                             )}
-                                            
-                                            {/* Botón eliminar - no permitir eliminar el último admin */}
+
+                                            {}
                                             <button
                                                 onClick={() => openActionModal(user, 'delete')}
                                                 className="minecraft-button delete-btn"
                                                 style={{ fontSize: '0.6em', padding: '5px 8px' }}
-                                                disabled={!canModifyAdmin(user)}
+                                                disabled={user.role === 'ROLE_ADMIN' && !canModifyAdmin(user)}
                                             >
                                                 🗑️ Delete
                                             </button>
@@ -239,7 +240,6 @@ const UserManagement = () => {
                 </div>
             )}
 
-            {/* Estadísticas */}
             <div style={{ marginTop: '20px', padding: '10px', backgroundColor: 'var(--color-dirt)', border: '2px solid var(--color-text-dark)' }}>
                 <p style={{ fontSize: '0.7em', margin: 0 }}>
                     📊 <strong>Statistics:</strong> {getAdminCount()} Admin(s) • {users.filter(u => u.role === 'ROLE_USER').length} User(s) • Total: {users.length}
@@ -255,7 +255,7 @@ const UserManagement = () => {
                 </button>
             </div>
 
-            {/* Modal de confirmación para acciones */}
+            {}
             <MinecraftModal
                 isOpen={actionModal.isOpen}
                 onClose={closeActionModal}
@@ -265,7 +265,7 @@ const UserManagement = () => {
                 type={actionModal.type === 'delete' ? 'danger' : 'warning'}
             />
 
-            {/* Alertas personalizadas */}
+            {}
             <MinecraftAlert
                 isOpen={alert.isOpen}
                 onClose={() => setAlert({ ...alert, isOpen: false })}

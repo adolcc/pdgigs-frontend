@@ -1,0 +1,123 @@
+/* base.css - variables, reset and typography */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root{
+  /* colors */
+  --color-dirt: #6b4423;
+  --color-grass: #4b8841;
+  --color-wood: #a07d57;
+  --color-stone: #a9a9a9;
+  --color-text-light: #f0f0f0;
+  --color-text-dark: #2b2b2b;
+  --color-accent-green: #38b449;
+  --color-glow: #ffff55;
+
+  --row-bg: #E7D9C7;
+  --row-overlay: rgba(0,0,0,0.035);
+  --row-text: #2b2b2b;
+  --row-border: rgba(43,43,43,0.95);
+  --row-shadow: rgba(0,0,0,0.16);
+
+  --ui-scale: 0.9;
+  --base-font-size: calc(10px * var(--ui-scale));
+  --btn-font-size: calc(1em * var(--ui-scale));
+  --heading-scale: calc(1.8em * var(--ui-scale));
+  --btn-padding: calc(10px * var(--ui-scale)) calc(20px * var(--ui-scale));
+}
+
+/* Reset and body */
+html,body{height:100%}
+body{
+  font-family: 'Press Start 2P', cursive;
+  font-size: var(--base-font-size);
+  color: var(--color-text-light);
+  margin:0;
+  padding:0;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding-top:24px;
+  min-height:100vh;
+  background-color:var(--color-grass);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><pattern id="g" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="%236b4423"/><rect x="0" y="0" width="5" height="5" fill="%237e542c"/><rect x="5" y="5" width="5" height="5" fill="%237e542c"/></pattern></defs><rect width="100%25" height="100%25" fill="url(%23g)"/></svg>');
+  background-size:100px 100px;
+}
+
+#root{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:0 24px;
+  box-sizing:border-box;
+}
+
+h1,h2{
+  color:var(--color-glow);
+  text-shadow:2px 2px 0 var(--color-text-dark);
+  font-size:var(--heading-scale);
+  margin:12px 0 14px 0;
+  line-height:1.05;
+}
+
+/* INPUT / FORM FIXES */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="file"],
+textarea,
+select,
+.minecraft-input {
+  font-family: 'Press Start 2P', monospace !important;
+  color: var(--color-text-dark) !important;       
+  background: var(--color-text-light) !important; 
+  border: 3px solid var(--color-text-dark) !important;
+  box-shadow: inset 2px 2px 0 var(--color-text-dark) !important;
+  padding: 8px 10px !important;
+  font-size: calc(0.85em * var(--ui-scale)) !important;
+  line-height: 1 !important;
+}
+
+/* Placeholder dark */
+input::placeholder,
+textarea::placeholder {
+  color: rgba(43,43,43,0.62) !important;
+  opacity: 1 !important;
+}
+
+input,
+textarea,
+select { color: var(--color-text-dark) !important; }
+
+input[type="file"] {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.file-input-label{
+  display:inline-block;
+  padding:8px 12px;
+  background-color:var(--color-wood);
+  color:var(--color-text-light);
+  border:3px solid var(--color-text-dark);
+  cursor:pointer;
+  font-family: 'Press Start 2P', monospace;
+  font-size: calc(0.8em * var(--ui-scale));
+}
+.file-input-label:hover { background-color:#c49d6c; }
+
+
+.file-input-name {
+  display:inline-block;
+  margin-left: 10px;
+  color: var(--row-text);
+  font-family: 'Press Start 2P', monospace;
+}
