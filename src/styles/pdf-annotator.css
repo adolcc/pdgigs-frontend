@@ -1,0 +1,90 @@
+.pdf-annotator .toolbar {
+  height: 42px !important;
+  background-color: #f0f0f0 !important; /* Fondo gris suave de la barra */
+  border-bottom: 1px solid #cccccc !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 10px !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.toolbar-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: rgba(0, 0, 0, 0.05) !important; /* Fondo para agrupar botones */
+  padding: 3px !important;
+  border-radius: 6px !important;
+}
+
+.pdf-annotator .toolbar button,
+.pdf-annotator .toolbar .toolbutton {
+  width: 30px !important;
+  height: 30px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #bbbbbb !important;
+  border-radius: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.pdf-annotator .toolbar .toolbutton.active {
+  background-color: #efe3d8 !important;
+  border-color: #4b3a2a !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* SUB-PANEL: Fondo crema sólido garantizado */
+.control-panel-mini {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 12px !important;
+  height: 32px !important;
+  background-color: #fdfaf7 !important; /* Beige sólido */
+  border: 1px solid #8b6a4a !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+  margin-left: 10px !important;
+}
+
+.color-input-square {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 22px !important;
+  height: 22px !important;
+  border: 1px solid #4b3a2a !important;
+  background: #ffffff !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+}
+.color-input-square::-webkit-color-swatch {
+  border: none !important;
+}
+
+.mini-input-num {
+  width: 35px !important;
+  height: 20px !important;
+  border: 1px solid #8b6a4a !important;
+  text-align: center !important;
+  font-size: 11px !important;
+}
+
+.mini-toggle {
+  width: 22px !important;
+  height: 22px !important;
+  background: white !important;
+  border: 1px solid #8b6a4a !important;
+  font-size: 10px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+}
+.mini-toggle.active {
+  background: #4b3a2a !important;
+  color: white !important;
+}

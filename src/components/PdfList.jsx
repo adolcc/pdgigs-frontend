@@ -11,8 +11,7 @@ const PdfList = ({ refreshKey }) => {
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [viewer, setViewer] = useState({ isOpen: false, url: null, filename: null, displayName: null });
-
+  const [viewer, setViewer] = useState({ isOpen: false, url: null, filename: null, displayName: null, scoreId: null });
   const [confirm, setConfirm] = useState({ isOpen: false, id: null, title: "" });
   const [alert, setAlert] = useState({ isOpen: false, title: "", message: "", type: "info" });
 
@@ -42,8 +41,7 @@ const PdfList = ({ refreshKey }) => {
       window.removeEventListener("scores:updated", onUpdated);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-
-  }, [refreshKey]);
+  }, [fetchScores, refreshKey]);
 
   const viewPdf = async (id, title, filename) => {
     try {
@@ -55,7 +53,7 @@ const PdfList = ({ refreshKey }) => {
       const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: contentType });
       const url = window.URL.createObjectURL(blob);
       const displayName = (title && title.trim()) ? title.trim() : "Untitled";
-      setViewer({ isOpen: true, url, filename: filename || id, displayName });
+      setViewer({ isOpen: true, url, filename: filename || id, displayName, scoreId: id });
     } catch (err) {
       console.error("View PDF error", err);
       setAlert({ isOpen: true, title: "Error", message: "Failed to load PDF", type: "error" });
@@ -64,7 +62,7 @@ const PdfList = ({ refreshKey }) => {
 
   const closeViewer = () => {
     try { if (viewer.url) window.URL.revokeObjectURL(viewer.url); } catch (e) {}
-    setViewer({ isOpen: false, url: null, filename: null, displayName: null });
+    setViewer({ isOpen: false, url: null, filename: null, displayName: null, scoreId: null });
   };
 
   const handleDownload = async (id, filenameFallback) => {
@@ -136,7 +134,6 @@ const PdfList = ({ refreshKey }) => {
                   </div>
 
                   <div className="row-actions" aria-hidden>
-                    
                     <button
                       type="button"
                       className="minecraft-button small icon"
@@ -185,11 +182,13 @@ const PdfList = ({ refreshKey }) => {
         )}
 
         <div className="reload-section" style={{ marginTop: 18 }}>
-          <button className="minecraft-button" onClick={fetchScores}>🔄 Refresh List</button>
+          <button className="minecraft-button" onClick={fetchScores} disabled={loading}>
+            {loading ? "Refreshing..." : "🔄 Refresh List"}
+          </button>
         </div>
       </div>
 
-      <PdfViewerModal isOpen={viewer.isOpen} onClose={closeViewer} blobUrl={viewer.url} filename={viewer.filename} displayName={viewer.displayName} />
+      <PdfViewerModal isOpen={viewer.isOpen} onClose={closeViewer} blobUrl={viewer.url} filename={viewer.filename} displayName={viewer.displayName} scoreId={viewer.scoreId} />
 
       <MinecraftConfirm
         isOpen={confirm.isOpen}

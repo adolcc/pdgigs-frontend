@@ -1,0 +1,52 @@
+.admin-list .row-left{
+  align-items: center;
+}
+.admin-list .row-info{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.admin-list .row-title{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60ch;
+}
+.admin-list .row-meta{
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.admin-list .row-meta .meta-item{
+  display: inline-flex;
+  align-items: center;
+  min-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-list .row-actions{
+  align-self: center;
+  margin-top: 0;
+}
+@media (max-width: 640px){
+  .admin-list .row-meta{ gap: 12px; flex-wrap: wrap; }
+  .admin-list .row-meta .meta-item{ min-width: 0; }
+  .admin-list .row-actions{ align-self: flex-start; margin-top: 8px; }
+}
+
+/* hide global palette when pencil mode active */
+.toolbar.mode-pencil .global-palette {
+  display: none !important;
+}
+
+/* optional: hide TextControls when in pencil mode to avoid overlap */
+.toolbar.mode-pencil .pencil-controls-wrapper {
+  display: block;
+}
+
+/* ensure toolbar overflow doesn't clip panels */
+.toolbar { overflow: visible !important; }

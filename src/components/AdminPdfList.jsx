@@ -1,3 +1,4 @@
+import "../styles/admin.css";
 import React, { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../services/axiosInstance";
 import { downloadBlob } from "../services/downloadHelpers";
@@ -9,9 +10,7 @@ const AdminPdfList = () => {
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const [viewer, setViewer] = useState({ isOpen: false, url: null, filename: null, displayName: null });
-
+  const [viewer, setViewer] = useState({ isOpen: false, url: null, filename: null, displayName: null, scoreId: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, score: null });
   const [alert, setAlert] = useState({ isOpen: false, title: "", message: "", type: "info" });
 
@@ -21,6 +20,7 @@ const AdminPdfList = () => {
     try {
       const res = await axiosInstance.get("/admin/scores");
       setScores(res.data || []);
+      setAlert({ isOpen: false, title: "", message: "", type: "info" });
     } catch (err) {
       console.error("AdminPdfList fetch error", err);
       setError("Error loading scores");
@@ -50,8 +50,7 @@ const AdminPdfList = () => {
       const url = window.URL.createObjectURL(blob);
       const meta = await axiosInstance.get(`/api/scores/${id}`).then(r => r.data).catch(() => null);
       const displayName = meta?.title || meta?.filename || id;
-
-      setViewer({ isOpen: true, url, filename: `${displayName}.pdf`, displayName });
+      setViewer({ isOpen: true, url, filename: `${displayName}.pdf`, displayName, scoreId: id });
     } catch (err) {
       console.error("Admin view error", err);
       const status = err.response?.status;
@@ -63,7 +62,7 @@ const AdminPdfList = () => {
 
   const closeViewer = () => {
     try { if (viewer.url) window.URL.revokeObjectURL(viewer.url); } catch (e) {}
-    setViewer({ isOpen: false, url: null, filename: null, displayName: null });
+    setViewer({ isOpen: false, url: null, filename: null, displayName: null, scoreId: null });
   };
 
   const downloadPdf = async (id) => {
@@ -102,6 +101,8 @@ const AdminPdfList = () => {
     }
   };
 
+  const closeAlert = () => setAlert({ isOpen: false, title: "", message: "", type: "info" });
+
   if (loading) return <div className="minecraft-loading"><p>⛏️ Loading scores...</p></div>;
 
   return (
@@ -109,7 +110,9 @@ const AdminPdfList = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <h2 style={{ color: "var(--color-glow)", margin: 0 }}>📚 All System Scores (Admin)</h2>
         <div>
-          <button className="minecraft-button" onClick={fetchScores}>🔄 Refresh List</button>
+          <button className="minecraft-button" onClick={fetchScores} disabled={loading}>
+            {loading ? "Refreshing..." : "🔄 Refresh List"}
+          </button>
         </div>
       </div>
 
@@ -117,7 +120,7 @@ const AdminPdfList = () => {
         {error && <p style={{ color: "#ff8a80" }}>{error}</p>}
 
         {scores.length > 0 ? (
-          <div className="minecraft-list" role="list" style={{ marginTop: 8 }}>
+          <div className="minecraft-list admin-list" role="list" style={{ marginTop: 8 }}>
             {scores.map(score => (
               <div className="list-row" key={score.id} role="listitem" tabIndex={0}>
                 <div className="row-left">
@@ -125,10 +128,8 @@ const AdminPdfList = () => {
                     <div className="row-title">{score.title || "No Title"}</div>
                     <div className="row-meta" style={{ marginTop: 8 }}>
                       <span className="meta-item">Author: {score.author || "Unknown"}</span>
-                      <span className="meta-item" style={{ marginLeft: 12 }}>Style: {score.musicStyle || score.musicalStyle || "Not specified"}</span>
-                      <span className="meta-item" style={{ display: "block", marginTop: 8 }}>
-                        Uploaded by: {score.userEmail || score.userId || "Unknown user"}
-                      </span>
+                      <span className="meta-item">Style: {score.musicStyle || score.musicalStyle || "Not specified"}</span>
+                      <span className="meta-item">Uploaded by: {score.userEmail || score.userId || "Unknown user"}</span>
                     </div>
                   </div>
 
@@ -183,7 +184,7 @@ const AdminPdfList = () => {
 
       <MinecraftAlert
         isOpen={alert.isOpen}
-        onClose={() => setAlert({ ...alert, isOpen: false })}
+        onClose={closeAlert}
         title={alert.title}
         message={alert.message}
         type={alert.type}
@@ -195,6 +196,7 @@ const AdminPdfList = () => {
         blobUrl={viewer.url}
         filename={viewer.filename}
         displayName={viewer.displayName}
+        scoreId={viewer.scoreId}
       />
     </div>
   );

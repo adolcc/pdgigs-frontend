@@ -24,17 +24,20 @@ const Register = () => {
     try {
       const response = await axiosInstance.post("/auth/register", { email, name, password });
       const token = response.data?.token;
-      const role = response.data?.role;
+      const role = response.data?.role || "ROLE_USER";
       if (token) {
         setAuthToken(token);
         setUserRole(role);
         setUserEmail(email);
-        localStorage.setItem("jwt", token);
-        localStorage.setItem("userRole", role);
-        localStorage.setItem("userEmail", email);
+        try {
+          localStorage.setItem("jwt", token);
+          if (role) localStorage.setItem("userRole", role);
+          localStorage.setItem("userEmail", email);
+        } catch (e) {}
+        navigate("/my-scores", { replace: true });
+      } else {
+        setStatus({ type: "error", text: "Registration succeeded but no token returned. Please login." });
       }
-      setStatus({ type: "success", text: "Registration successful! Redirecting..." });
-      setTimeout(() => navigate("/my-scores"), 700);
     } catch (error) {
       const msg = error.response?.data?.message || "Registration failed. Please try again.";
       setStatus({ type: "error", text: msg });
@@ -43,51 +46,70 @@ const Register = () => {
     }
   };
 
-  const statusStyle = (type) => {
-    if (type === "success") return { color: "var(--color-accent-green)" };
-    if (type === "error") return { color: "#ff8a80" };
-    return { color: "var(--row-text)" };
-  };
-
   return (
-    <div style={{ minHeight: "calc(100vh - 48px)", display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
-      <div className="minecraft-container" style={{ maxWidth: 900, width: "100%", display: "flex", justifyContent: "center" }}>
-        <div style={{ width: "100%", maxWidth: 720 }}>
-          {/* Logo PDgigs */}
-          <div style={{ textAlign: "center", marginBottom: 10 }}>
-            <div className="pdgigs-logo pdgigs-logo--inline" aria-hidden="true">PDgigs</div>
-            <h1 style={{ margin: 6 }}>Join the Band!</h1>
-          </div>
+    <div className="page-center">
+      <div className="minecraft-container">
+        <div style={{ textAlign: "center", marginBottom: 8 }}>
+          <div className="pdgigs-logo pdgigs-logo--inline" aria-hidden="true">PDgigs</div>
+          <h1 style={{ margin: 6 }}>Join the Band!</h1>
+        </div>
 
-          <div className="minecraft-item" style={{ padding: 18 }}>
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: 12 }}>
-                <label>Email:</label>
-                <input className="minecraft-input" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="steve@minecraft.com" />
+        <div className="minecraft-item" style={{ padding: 18 }}>
+          <form onSubmit={handleSubmit} className="edit-form">
+            <div className="form-row">
+              <label>Email:</label>
+              <input
+                className="minecraft-input"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                placeholder="steve@minecraft.com"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Name:</label>
+              <input
+                className="minecraft-input"
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+                placeholder="Alex/Steve"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Password:</label>
+              <input
+                className="minecraft-input"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                placeholder="CreeperAwMan!"
+              />
+            </div>
+
+            <div className="form-actions" style={{ marginTop: 12 }}>
+              <button type="submit" className="minecraft-button" disabled={submitting}>
+                {submitting ? "Registering..." : "Start Mining Scores!"}
+              </button>
+
+              <Link to="/login" className="register-link" style={{ marginLeft: 18 }}>
+                Login!
+              </Link>
+            </div>
+          </form>
+
+          {status && (
+            <div style={{ marginTop: 12 }}>
+              <div className={`status-message ${status.type || "info"}`}>
+                {status.text}
               </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <label>Name:</label>
-                <input className="minecraft-input" type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="Alex/Steve" />
-              </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <label>Password:</label>
-                <input className="minecraft-input" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="CreeperAwMan!" />
-              </div>
-
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <button type="submit" className="minecraft-button" disabled={submitting}>
-                  {submitting ? "Registering..." : "Start Mining Scores!"}
-                </button>
-                <div style={{ marginLeft: 8 }}>
-                  <Link to="/login" style={{ color: "var(--color-glow)", textDecoration: "underline" }}>Login!</Link>
-                </div>
-              </div>
-            </form>
-
-            {status && <p style={{ marginTop: 12, ...statusStyle(status.type) }}>{status.text}</p>}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
