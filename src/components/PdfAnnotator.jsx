@@ -1,245 +1,284 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf";
 import FabricOverlay from "./FabricOverlay";
-import { Toolbar } from "./toolbar";
-GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
+import Toolbar from "./toolbar/Toolbar";
 import "../styles/pdf-annotator.css";
 
-const DEFAULT_THEME_MINECRAFT_COLOR = "#00AA00";
-const DEFAULT_TEXT_PROPS = {
-  fontSize: 18,
-  fontFamily: "Arial",
-  bold: false,
-  italic: false,
-  fill: DEFAULT_THEME_MINECRAFT_COLOR,
-  backgroundColor: "",
-  shadow: false
-};
+GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
 
 const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
   const wrapperRef = useRef(null);
-  const canvasRef = useRef({ c1: null, c2: null });
+  const canvasRef = useRef(null);
   const pdfRef = useRef(null);
+  const containerRef = useRef(null);
 
   const [pageNum, setPageNum] = useState(initialPage);
   const [numPages, setNumPages] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [scale, setScale] = useState(1.0);
-  const [viewMode, setViewMode] = useState("single"); // "single" | "two-up"
-  const [centerSingle, setCenterSingle] = useState(true);
-
-  const [activeTool, setActiveTool] = useState(null);
-  const [brushColor, setBrushColor] = useState("#8B4513");
-  const [brushWidth, setBrushWidth] = useState(4);
-
-  const [textProps, setTextProps] = useState(DEFAULT_TEXT_PROPS);
-  const [textSelectionActive, setTextSelectionActive] = useState(false);
-
+  const [scale, setScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeTool, setActiveTool] = useState(null);
+  const [annotations, setAnnotations] = useState({});
+  const [isDoublePage, setIsDoublePage] = useState(false);
+
+  // Estados de configuración de herramientas
+  const [brushColor, setBrushColor] = useState("#000000");
+  const [brushWidth, setBrushWidth] = useState(5);
+  const [textProps, setTextProps] = useState({
+    fontSize: 18,
+    fill: "#000000",
+    bold: false,
+  });
 
   useEffect(() => {
-    if (!pdfUrl) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        let loadingTask;
-        if (pdfUrl instanceof ArrayBuffer || ArrayBuffer.isView(pdfUrl)) {
-          loadingTask = getDocument({ data: pdfUrl });
-        } else {
-          loadingTask = getDocument(pdfUrl);
-        }
-        const pdf = await loadingTask.promise;
-        if (cancelled) return;
-        pdfRef.current = pdf;
-        setNumPages(pdf.numPages || 0);
-        await renderPages();
-      } catch (err) {
-        console.error("PdfAnnotator: failed to load PDF", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [pdfUrl]);
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
 
-  useEffect(() => {
-    if (!pdfRef.current) return;
-    renderPages();
-  }, [pageNum, scale, viewMode, centerSingle]);
-
-  useEffect(() => {
-    const handler = () => {
-      const docFs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || null;
-      setIsFullscreen(!!docFs);
-    };
-    document.addEventListener("fullscreenchange", handler);
-    document.addEventListener("webkitfullscreenchange", handler);
-    document.addEventListener("mozfullscreenchange", handler);
     return () => {
-      document.removeEventListener("fullscreenchange", handler);
-      document.removeEventListener("webkitfullscreenchange", handler);
-      document.removeEventListener("mozfullscreenchange", handler);
+      document.body.style.margin = "";
+      document.body.style.padding = "";
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, []);
 
-  async function renderPageToCanvas(pageNumber, canvas) {
-    if (!pdfRef.current || !canvas) return;
-    try {
-      const page = await pdfRef.current.getPage(pageNumber);
-      const viewport = page.getViewport({ scale });
-      const DPR = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(viewport.width * DPR);
-      canvas.height = Math.floor(viewport.height * DPR);
-      canvas.style.width = `${Math.floor(viewport.width)}px`;
-      canvas.style.height = `${Math.floor(viewport.height)}px`;
+  useEffect(() => {
+    const handleFs = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handleFs);
+    return () => document.removeEventListener("fullscreenchange", handleFs);
+  }, []);
+
+  useEffect(() => {
+    if (!pdfUrl) return;
+    getDocument(pdfUrl).promise.then((pdf) => {
+      pdfRef.current = pdf;
+      setNumPages(pdf.numPages);
+      renderPage();
+    });
+  }, [pdfUrl]);
+
+  const renderPage = useCallback(async () => {
+    if (!pdfRef.current || !canvasRef.current) return;
+
+    console.log("🔄 Renderizando página:", {
+      page: pageNum,
+      scale,
+      doublePage: isDoublePage,
+      numPages,
+    });
+
+    if (isDoublePage && pageNum < numPages) {
+      // Renderizar dos páginas
+      const page1 = await pdfRef.current.getPage(pageNum);
+      const page2 = await pdfRef.current.getPage(pageNum + 1);
+
+      const viewport1 = page1.getViewport({ scale });
+      const viewport2 = page2.getViewport({ scale });
+
+      // Canvas más ancho para dos páginas
+      const canvas = canvasRef.current;
+      canvas.width = (viewport1.width + viewport2.width) * 2;
+      canvas.height = Math.max(viewport1.height, viewport2.height) * 2;
+
       const ctx = canvas.getContext("2d");
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      await page.render({ canvasContext: ctx, viewport }).promise;
-    } catch (e) {
-      console.error("renderPageToCanvas error", e);
-    }
-  }
+      ctx.scale(2, 2);
 
-  async function renderPages() {
-    const wrapper = wrapperRef.current && wrapperRef.current.querySelector(".pdf-canvas-wrapper");
-    if (!wrapper || !pdfRef.current) return;
-    let c1 = canvasRef.current.c1;
-    let c2 = canvasRef.current.c2;
+      // Renderizar primera página
+      await page1.render({ canvasContext: ctx, viewport: viewport1 }).promise;
 
-    if (!c1) {
-      c1 = document.createElement("canvas");
-      c1.className = "pdf-page-canvas-1";
-      canvasRef.current.c1 = c1;
-      wrapper.appendChild(c1);
-    }
+      // Renderizar segunda página al lado
+      ctx.save();
+      ctx.translate(viewport1.width, 0);
+      await page2.render({ canvasContext: ctx, viewport: viewport2 }).promise;
+      ctx.restore();
 
-    await renderPageToCanvas(pageNum, c1);
-
-    const showSecond = viewMode === "two-up" && pageNum < (pdfRef.current.numPages || 0);
-    if (showSecond) {
-      if (!c2) {
-        c2 = document.createElement("canvas");
-        c2.className = "pdf-page-canvas-2";
-        canvasRef.current.c2 = c2;
-        wrapper.appendChild(c2);
-      }
-      await renderPageToCanvas(pageNum + 1, c2);
-      c1.style.marginRight = "12px";
-      c2.style.display = "inline-block";
-      wrapper.classList.add("two-up");
+      console.log("📖 Modo DOBLE PÁGINA activado - Ancho total:", canvas.width);
     } else {
-      if (c2) c2.style.display = "none";
-      c1.style.marginRight = "0";
-      wrapper.classList.remove("two-up");
+      // Página simple
+      const page = await pdfRef.current.getPage(pageNum);
+      const viewport = page.getViewport({ scale });
+      const canvas = canvasRef.current;
+
+      canvas.width = viewport.width * 2;
+      canvas.height = viewport.height * 2;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(2, 2);
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      console.log("📄 Modo PÁGINA SIMPLE activado");
     }
 
-    try { window.dispatchEvent(new CustomEvent('pdf-annotator-page-rendered')); } catch (e) {}
-  }
+    console.log(
+      "📏 PDF Canvas size:",
+      canvasRef.current.width,
+      "x",
+      canvasRef.current.height
+    );
+  }, [pageNum, scale, isDoublePage, numPages]);
 
-  const toggleTool = (tool) => {
-    setActiveTool((t) => (t === tool ? null : tool));
+  useEffect(() => {
+    renderPage();
+  }, [pageNum, scale, isDoublePage, renderPage]);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement)
+      document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
   };
-  const togglePencil = () => toggleTool("pencil");
-  const toggleEraser = () => toggleTool("eraser");
-  const toggleText = () => toggleTool("text");
-  const toggleSelect = () => toggleTool("select");
 
-  const toggleFullscreen = async () => {
-    try {
-      const el = wrapperRef.current;
-      if (!el) return;
-      const doc = document;
-      const isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement);
-      if (!isFs) {
-        if (el.requestFullscreen) await el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
-        else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
-        setIsFullscreen(true);
-      } else {
-        if (doc.exitFullscreen) await doc.exitFullscreen();
-        else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
-        else if (doc.mozCancelFullScreen) await doc.mozCancelFullScreen();
-        setIsFullscreen(false);
-      }
-    } catch (e) {
-      console.error("toggleFullscreen failed", e);
+  const handleDownload = () => {
+    console.log("Enviando anotaciones al Backend Java:", annotations);
+    alert("Preparando descarga...");
+  };
+
+  const handlePrevPage = () => {
+    if (isDoublePage && pageNum > 1) {
+      setPageNum((p) => Math.max(1, p - 2));
+    } else {
+      setPageNum((p) => Math.max(1, p - 1));
     }
   };
 
-  const onSetScale = (s) => setScale(s);
-  const onToggleViewMode = () => setViewMode(v => (v === "two-up" ? "single" : "two-up"));
-  const onToggleCenter = () => setCenterSingle(s => !s);
-
-  const palette = [
-    { color: "#FFFF00", title: "Yellow" },
-    { color: "#000000", title: "Black" },
-    { color: "#0000FF", title: "Blue" },
-    { color: "#00AA00", title: "Green" }
-  ];
-
-  const handleSelectionChange = (objProps) => {
-    if (!objProps) {
-      setTextSelectionActive(false);
-      return;
+  const handleNextPage = () => {
+    if (isDoublePage && pageNum + 1 < numPages) {
+      setPageNum((p) => Math.min(numPages - 1, p + 2));
+    } else {
+      setPageNum((p) => Math.min(numPages, p + 1));
     }
-    setTextProps((prev) => ({ ...prev, ...objProps }));
-    setTextSelectionActive(true);
   };
 
-  const handleTextPropsChange = (tp) => {
-    if (!tp.fill || tp.fill === "transparent") tp.fill = DEFAULT_THEME_MINECRAFT_COLOR;
-    setTextProps(tp);
+  // Función para ajustar el zoom
+  const handleSetScale = (newScale) => {
+    // Permitir zoom desde 0.1 (10%) hasta 3 (300%)
+    const clampedScale = Math.max(0.1, Math.min(3, newScale));
+    setScale(clampedScale);
   };
 
   return (
-    <div className={`pdf-annotator ${centerSingle ? "center-single" : ""}`} ref={wrapperRef} style={{ width: "100%", height: "100%", position: "relative" }}>
-      <Toolbar
-        pageNum={pageNum}
-        numPages={numPages}
-        onPrev={() => { setActiveTool(null); if (pageNum>1) setPageNum(p=>p-1); }}
-        onNext={() => { setActiveTool(null); if (pageNum < numPages) setPageNum(p=>p+1); }}
-        activeTool={activeTool}
-        onTogglePencil={togglePencil}
-        onToggleEraser={toggleEraser}
-        onToggleText={toggleText}
-        onToggleSelect={toggleSelect}
-        onToggleFullscreen={toggleFullscreen}
-        isFullscreen={isFullscreen}
-        onToggleViewMode={onToggleViewMode}
-        viewMode={viewMode}
-        scale={scale}
-        onSetScale={onSetScale}
-        palette={palette}
-        brushColor={brushColor}
-        onColorChange={(c) => { setBrushColor(c); }}
-        onColorPickerChange={(c) => { setBrushColor(c); }}
-        brushWidth={brushWidth}
-        onBrushWidthChange={(w) => setBrushWidth(w)}
-        textProps={textProps}
-        onTextPropsChange={handleTextPropsChange}
-        textSelectionActive={textSelectionActive}
-        centerSingle={centerSingle}
-        onToggleCenter={onToggleCenter}
-      />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        width: "100vw",
+        backgroundColor: "#1a1a1a",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        overflow: "hidden",
+      }}
+    >
+      <header
+        className="toolbar pdf-annotator"
+        style={{
+          minHeight: "32px",
+          height: "32px",
+          width: "100%",
+          backgroundColor: "#b09b77",
+          display: "flex",
+          alignItems: "center",
+          padding: "1px 4px",
+          borderBottom: "1px solid #5d4037",
+          zIndex: 1000,
+          boxSizing: "border-box",
+          flexShrink: 0,
+        }}
+      >
+        <Toolbar
+          pageNum={pageNum}
+          numPages={numPages}
+          onPrev={handlePrevPage}
+          onNext={handleNextPage}
+          onToggleFullscreen={toggleFullscreen}
+          isFullscreen={isFullscreen}
+          scale={scale}
+          onSetScale={handleSetScale}
+          activeTool={activeTool}
+          onTogglePencil={() =>
+            setActiveTool(activeTool === "pencil" ? null : "pencil")
+          }
+          onToggleEraser={() =>
+            setActiveTool(activeTool === "eraser" ? null : "eraser")
+          }
+          onToggleText={() =>
+            setActiveTool(activeTool === "text" ? null : "text")
+          }
+          onToggleSelect={() =>
+            setActiveTool(activeTool === "select" ? null : "select")
+          }
+          onDownload={handleDownload}
+          isDoublePage={isDoublePage}
+          onToggleDoublePage={() => setIsDoublePage(!isDoublePage)}
+          brushColor={brushColor}
+          onColorPickerChange={setBrushColor}
+          brushWidth={brushWidth}
+          onBrushWidthChange={setBrushWidth}
+          textProps={textProps}
+          onTextPropsChange={setTextProps}
+        />
+      </header>
 
-      <div className="viewer" style={{ position: "relative", flex: 1 }}>
-        <div className="pdf-canvas-wrapper" />
-        <div className="overlay-wrapper" />
-      </div>
-
-      <FabricOverlay
-        containerRef={wrapperRef}
-        activeTool={activeTool}
-        brushColor={brushColor}
-        brushWidth={brushWidth}
-        textProps={textProps}
-        onSelectionChange={handleSelectionChange}
-        scale={scale}
-      />
-
-      {loading && <div className="loading-overlay">Loading PDF...</div>}
+      <main
+        ref={containerRef}
+        style={{
+          flex: 1,
+          overflow: "auto",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          padding: "20px",
+          backgroundColor: "#111",
+        }}
+      >
+        <div
+          ref={wrapperRef}
+          style={{
+            position: "relative",
+            width: "fit-content",
+            height: "fit-content",
+            boxShadow: "0 0 40px rgba(0,0,0,0.6)",
+            minWidth: isDoublePage ? "100%" : "auto",
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            style={{
+              display: "block",
+              backgroundColor: "white",
+              maxWidth: isDoublePage ? "100%" : "none",
+            }}
+          />
+          <div
+            className="overlay-wrapper"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 100,
+              pointerEvents: "auto",
+            }}
+          />
+          <FabricOverlay
+            containerRef={wrapperRef}
+            activeTool={activeTool}
+            scale={scale}
+            pageNum={pageNum}
+            savedData={annotations[pageNum]}
+            onSaveAnnotations={(json) =>
+              setAnnotations((prev) => ({ ...prev, [pageNum]: json }))
+            }
+            brushColor={brushColor}
+            brushWidth={brushWidth}
+            textProps={textProps}
+            isDoublePage={isDoublePage}
+          />
+        </div>
+      </main>
     </div>
   );
 };

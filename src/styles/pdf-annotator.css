@@ -1,90 +1,205 @@
-.pdf-annotator .toolbar {
-  height: 42px !important;
-  background-color: #f0f0f0 !important; /* Fondo gris suave de la barra */
-  border-bottom: 1px solid #cccccc !important;
-  display: flex !important;
-  align-items: center !important;
-  padding: 0 10px !important;
-  gap: 8px !important;
-  box-sizing: border-box !important;
-}
+/* ARCHIVO CONSOLIDADO: pdf-annotator.css
+   Estilo: Madera Roble (Minecraft Style Soft)
+   Objetivo: Alineación perfecta, legibilidad total y cero transparencias.
+*/
 
-.toolbar-group {
-  display: flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-  background: rgba(0, 0, 0, 0.05) !important; /* Fondo para agrupar botones */
-  padding: 3px !important;
-  border-radius: 6px !important;
-}
-
+/* 1. RESET Y PROTECCIÓN TOTAL CONTRA ESTILOS GLOBALES */
+.pdf-annotator .toolbar,
+.pdf-annotator .toolbar *,
 .pdf-annotator .toolbar button,
-.pdf-annotator .toolbar .toolbutton {
-  width: 30px !important;
-  height: 30px !important;
-  background-color: #ffffff !important;
-  border: 1px solid #bbbbbb !important;
-  border-radius: 4px !important;
+.pdf-annotator .toolbar input,
+.pdf-annotator .toolbar span {
+  margin: 0 !important;
+  padding: 0;
+  box-sizing: border-box !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  line-height: 1 !important;
+}
+
+/* 2. CONTENEDOR PRINCIPAL (LA BARRA) */
+header.toolbar.pdf-annotator,
+body #root header.toolbar.pdf-annotator,
+.pdf-annotator.toolbar {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  background-color: #a07d57 !important;
+  border-bottom: 2px solid #5d3a1a !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 0 6px !important;
+  gap: 4px !important;
+  width: 100% !important;
+  position: relative;
+  z-index: 100;
+}
+
+/* 3. GRUPOS Y BOTONES */
+.pdf-annotator .toolbar-group {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  font-size: 14px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  gap: 6px !important;
+  background: transparent !important;
+}
+
+header.toolbar.pdf-annotator button,
+header.toolbar.pdf-annotator .toolbutton,
+.pdf-annotator.toolbar button.minecraft-button,
+.pdf-annotator.toolbar .minecraft-button,
+.pdf-annotator.toolbar > div > button {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 10px !important;
+  border: 1px solid #2b2b2b !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-radius: 3px !important;
 }
 
 .pdf-annotator .toolbar .toolbutton.active {
-  background-color: #efe3d8 !important;
-  border-color: #4b3a2a !important;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  background-color: #ffff55 !important; /* Amarillo Minecraft */
+  border-color: #000000 !important;
+  box-shadow: 0 0 4px rgba(255, 255, 85, 0.5) !important;
 }
 
-/* SUB-PANEL: Fondo crema sólido garantizado */
-.control-panel-mini {
+/* 4. PANELES DINÁMICOS (PENCIL / TEXT) */
+.pdf-annotator .control-panel-mini {
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
-  gap: 10px !important;
-  padding: 0 12px !important;
-  height: 32px !important;
-  background-color: #fdfaf7 !important; /* Beige sólido */
-  border: 1px solid #8b6a4a !important;
-  border-radius: 6px !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
-  margin-left: 10px !important;
+  gap: 12px !important;
+  padding: 0 10px !important;
+  height: 100% !important;
+  background-color: transparent !important; /* Integrado en la barra */
+  border: none !important;
+  margin-left: 0 !important;
 }
 
-.color-input-square {
+/* 5. LÍNEA VERTICAL (DIVIDER) */
+.pdf-annotator .vertical-divider {
+  width: 2px !important;
+  height: 24px !important;
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  margin: 0 8px !important;
+  align-self: center !important;
+}
+
+/* 6. INPUTS (COLOR, NÚMEROS, SLIDERS) */
+.pdf-annotator .color-input-square {
   appearance: none !important;
   -webkit-appearance: none !important;
-  width: 22px !important;
-  height: 22px !important;
-  border: 1px solid #4b3a2a !important;
+  width: 24px !important;
+  height: 24px !important;
+  border: 1px solid #000000 !important;
   background: #ffffff !important;
   cursor: pointer !important;
   padding: 0 !important;
 }
-.color-input-square::-webkit-color-swatch {
+
+/* Fix específico para el cuadro de color en Chrome/Safari */
+.pdf-annotator .color-input-square::-webkit-color-swatch-wrapper {
+  padding: 0 !important;
+}
+.pdf-annotator .color-input-square::-webkit-color-swatch {
   border: none !important;
 }
 
-.mini-input-num {
-  width: 35px !important;
-  height: 20px !important;
-  border: 1px solid #8b6a4a !important;
+.pdf-annotator .mini-input-num {
+  width: 42px !important;
+  height: 26px !important;
+  border: 1px solid #2b2b2b !important;
   text-align: center !important;
-  font-size: 11px !important;
+  font-size: 12px !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
-.mini-toggle {
-  width: 22px !important;
-  height: 22px !important;
-  background: white !important;
-  border: 1px solid #8b6a4a !important;
+/* 7. TEXTOS E INDICADORES (NEGRO SÓLIDO) */
+.pdf-annotator .page-indicator-mini,
+.pdf-annotator .control-panel-mini span,
+.pdf-annotator .tiny-label {
+  color: #000000 !important;
+  font-size: 13px !important;
+  font-weight: 900 !important; /* Máximo grosor para lectura */
+  opacity: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 8. AJUSTE DE ZOOM SELECT */
+.pdf-annotator .zoom-select {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.pdf-annotator .border-left {
+  border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding-left: 8px !important;
+}
+
+/* Desactivar COMPLETAMENTE los estilos minecraft para la toolbar */
+.pdf-annotator.toolbar .minecraft-button,
+.pdf-annotator.toolbar button[class*="minecraft"] {
+  all: unset !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #2b2b2b !important;
+  border-radius: 3px !important;
+  color: #000000 !important;
   font-size: 10px !important;
-  font-weight: bold !important;
   cursor: pointer !important;
 }
-.mini-toggle.active {
-  background: #4b3a2a !important;
-  color: white !important;
+
+/* Desactivar bordes minecraft */
+.pdf-annotator.toolbar button,
+.pdf-annotator.toolbar .minecraft-button {
+  border-right: 1px solid #2b2b2b !important;
+  border-bottom: 1px solid #2b2b2b !important;
+  border-top: 1px solid #2b2b2b !important;
+  border-left: 1px solid #2b2b2b !important;
+}
+
+/* Reducir iconos SVG */
+.pdf-annotator.toolbar svg {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+/* Reducir paneles de controles */
+.pdf-annotator.toolbar .control-panel-mini {
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  padding: 0 4px !important;
+  margin: 0 !important;
+  gap: 4px !important;
+}
+
+/* Reducir inputs */
+.pdf-annotator.toolbar .color-input-square {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.pdf-annotator.toolbar .mini-input-num {
+  width: 35px !important;
+  height: 20px !important;
+  font-size: 10px !important;
 }

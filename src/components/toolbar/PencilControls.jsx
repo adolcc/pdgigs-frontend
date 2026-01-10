@@ -9,6 +9,7 @@ const PencilControls = ({
 }) => {
   return (
     <div className="control-panel-mini">
+      {/* Selector de color limpio */}
       <input
         type="color"
         className="color-input-square"
@@ -17,9 +18,15 @@ const PencilControls = ({
           onColorPickerChange && onColorPickerChange(e.target.value)
         }
       />
-      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-        <span style={{ fontSize: "12px" }}>●</span>
-        <div style={{ width: "50px" }}>
+
+      {/* Línea vertical divisoria */}
+      <div className="vertical-divider"></div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span style={{ color: "#000", fontSize: "14px", fontWeight: "bold" }}>
+          ●
+        </span>
+        <div style={{ width: "60px", display: "flex", alignItems: "center" }}>
           <RangeInput
             value={brushWidth}
             onChange={onBrushWidthChange}
@@ -27,11 +34,12 @@ const PencilControls = ({
             max={20}
           />
         </div>
-        <span style={{ fontSize: "10px", fontWeight: "800" }}>
+        <span style={{ color: "#000", fontSize: "11px", fontWeight: "900" }}>
           {brushWidth}px
         </span>
       </div>
     </div>
   );
 };
+
 export default PencilControls;

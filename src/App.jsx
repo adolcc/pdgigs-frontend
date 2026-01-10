@@ -8,6 +8,11 @@ import UploadPdf from "./components/UploadPdf";
 import ScoreEdit from "./components/ScoreEdit";
 import DashboardAdmin from "./components/DashboardAdmin";
 
+import "./styles/base.css";
+import "./styles/buttons.css";
+import "./styles/layout.css";
+import "./styles/pdf-annotator.css";
+
 function App() {
   return (
     <BrowserRouter>
