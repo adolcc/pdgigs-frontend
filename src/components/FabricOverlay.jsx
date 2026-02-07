@@ -262,6 +262,16 @@ const FabricOverlay = ({
       f.on("object:added", saveHandler);
       f.on("object:modified", saveHandler);
       f.on("object:removed", saveHandler);
+      f.on("path:created", () => {
+        setTimeout(saveAnnotations, 100); // Guardar cuando se completa un trazo
+      });
+
+      f.on("mouse:up", () => {
+        // Guardar también al soltar el mouse (útil para borrador)
+        if (activeToolRef.current === "eraser") {
+          setTimeout(saveAnnotations, 50);
+        }
+      });
 
       fabricRef.current = f;
 

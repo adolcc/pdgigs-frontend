@@ -99,3 +99,17 @@ export const IconDoublePage = () => (
     <line x1="8" y1="12" x2="16" y2="12" />
   </svg>
 );
+
+export const IconCloudUpload = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <path d="M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2-1.5-3.8-3.5-4.3C18 6.5 15.5 4 12.5 4 9.5 4 7 6.5 6.5 10.2 4.5 10.7 3 12.5 3 14.5 3 17 5 19 7.5 19h10z" />
+    <path d="M12 13v6M9 16l3-3 3 3" />
+  </svg>
+);

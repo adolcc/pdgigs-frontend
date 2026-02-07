@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../services/axiosInstance";
 import PdfAnnotator from "./PdfAnnotator";
-import { saveAnnotations, loadAnnotations } from "../services/annotationsService";
+import {
+  saveAnnotations,
+  loadAnnotations,
+} from "../services/annotationsService";
 
 const PdfAnnotatorModal = ({ scoreId, onClose }) => {
   const [pdfData, setPdfData] = useState(null);
@@ -13,7 +16,10 @@ const PdfAnnotatorModal = ({ scoreId, onClose }) => {
     (async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get(`/api/scores/${scoreId}/pdf`, { responseType: "arraybuffer", headers: { Accept: "application/pdf" } });
+        const res = await axiosInstance.get(`/api/scores/${scoreId}/pdf`, {
+          responseType: "arraybuffer",
+          headers: { Accept: "application/pdf" },
+        });
         if (cancelled) return;
         setPdfData(res.data);
       } catch (err) {
@@ -22,7 +28,9 @@ const PdfAnnotatorModal = ({ scoreId, onClose }) => {
         setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [scoreId]);
 
   async function handleSaveAnnotations(json, pageNumber) {
@@ -47,14 +55,54 @@ const PdfAnnotatorModal = ({ scoreId, onClose }) => {
   if (!pdfData) return null;
 
   return (
-    <div className="pdf-annotator-modal-overlay" role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 1400, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ width: "min(1100px, 96%)", height: "min(90vh, 1000px)", background: "white", borderRadius: 6, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: 8, background: "transparent", display: "flex", justifyContent: "flex-end" }}>
-          <button className="minecraft-button" onClick={onClose}>Close</button>
+    <div
+      className="pdf-annotator-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1400,
+        background: "rgba(0,0,0,0.6)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        style={{
+          width: "min(1100px, 96%)",
+          height: "min(90vh, 1000px)",
+          background: "white",
+          borderRadius: 6,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div
+          style={{
+            padding: 8,
+            background: "transparent",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <button className="minecraft-button" onClick={onClose}>
+            Close
+          </button>
         </div>
 
-        <div style={{ flex: 1 }}>
-          <PdfAnnotator pdfUrl={pdfData} />
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          {/* ✅ CORRECCIÓN: Pasar todas las props necesarias */}
+          <PdfAnnotator
+            pdfUrl={pdfData}
+            scoreId={scoreId}
+            onSaveAnnotations={handleSaveAnnotations}
+            onLoadAnnotations={handleLoadAnnotations}
+            onClose={onClose}
+          />
         </div>
       </div>
     </div>

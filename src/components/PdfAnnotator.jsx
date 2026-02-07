@@ -3,14 +3,25 @@ import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf";
 import FabricOverlay from "./FabricOverlay";
 import Toolbar from "./toolbar/Toolbar";
 import "../styles/pdf-annotator.css";
+import axiosInstance from "../services/axiosInstance";
+import { PDFDocument } from "pdf-lib";
+import axios from "axios";
 
 GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
 
-const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
+const PdfAnnotator = ({
+  pdfUrl,
+  scoreId,
+  onSaveAnnotations,
+  onLoadAnnotations,
+  onClose,
+  initialPage = 1,
+}) => {
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const pdfRef = useRef(null);
   const containerRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
   const [pageNum, setPageNum] = useState(initialPage);
   const [numPages, setNumPages] = useState(0);
@@ -20,7 +31,6 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
   const [annotations, setAnnotations] = useState({});
   const [isDoublePage, setIsDoublePage] = useState(false);
 
-  // Estados de configuración de herramientas
   const [brushColor, setBrushColor] = useState("#000000");
   const [brushWidth, setBrushWidth] = useState(5);
   const [textProps, setTextProps] = useState({
@@ -69,14 +79,12 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
     });
 
     if (isDoublePage && pageNum < numPages) {
-      // Renderizar dos páginas
       const page1 = await pdfRef.current.getPage(pageNum);
       const page2 = await pdfRef.current.getPage(pageNum + 1);
 
       const viewport1 = page1.getViewport({ scale });
       const viewport2 = page2.getViewport({ scale });
 
-      // Canvas más ancho para dos páginas
       const canvas = canvasRef.current;
       canvas.width = (viewport1.width + viewport2.width) * 2;
       canvas.height = Math.max(viewport1.height, viewport2.height) * 2;
@@ -84,10 +92,8 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
       const ctx = canvas.getContext("2d");
       ctx.scale(2, 2);
 
-      // Renderizar primera página
       await page1.render({ canvasContext: ctx, viewport: viewport1 }).promise;
 
-      // Renderizar segunda página al lado
       ctx.save();
       ctx.translate(viewport1.width, 0);
       await page2.render({ canvasContext: ctx, viewport: viewport2 }).promise;
@@ -95,7 +101,6 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
 
       console.log("📖 Modo DOBLE PÁGINA activado - Ancho total:", canvas.width);
     } else {
-      // Página simple
       const page = await pdfRef.current.getPage(pageNum);
       const viewport = page.getViewport({ scale });
       const canvas = canvasRef.current;
@@ -115,7 +120,7 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
       "📏 PDF Canvas size:",
       canvasRef.current.width,
       "x",
-      canvasRef.current.height
+      canvasRef.current.height,
     );
   }, [pageNum, scale, isDoublePage, numPages]);
 
@@ -129,9 +134,39 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
     else document.exitFullscreen();
   };
 
-  const handleDownload = () => {
-    console.log("Enviando anotaciones al Backend Java:", annotations);
-    alert("Preparando descarga...");
+  const handleDownload = async () => {
+    if (!scoreId) {
+      alert("Score ID is required for download");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.get(`/api/scores/${scoreId}/pdf`, {
+        responseType: "blob",
+      });
+
+      const filename = `annotated-${scoreId}.pdf`;
+
+      const contentType =
+        response.headers?.["content-type"] || "application/pdf";
+      const blob =
+        response.data instanceof Blob
+          ? response.data
+          : new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ PDF downloaded successfully");
+    } catch (error) {
+      console.error("❌ Download failed:", error);
+      alert("Failed to download PDF");
+    }
   };
 
   const handlePrevPage = () => {
@@ -150,11 +185,144 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
     }
   };
 
-  // Función para ajustar el zoom
   const handleSetScale = (newScale) => {
-    // Permitir zoom desde 0.1 (10%) hasta 3 (300%)
     const clampedScale = Math.max(0.1, Math.min(3, newScale));
     setScale(clampedScale);
+  };
+
+  const saveWithDebounce = useCallback(
+    (json) => {
+      if (!scoreId || !onSaveAnnotations) return;
+
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = setTimeout(() => {
+        onSaveAnnotations(json, pageNum);
+        console.log("💾 Auto-saved annotations");
+      }, 1000);
+    },
+    [scoreId, onSaveAnnotations, pageNum],
+  );
+
+  useEffect(() => {
+    if (!scoreId || !onSaveAnnotations) return;
+
+    const saveCurrentPageAnnotations = async () => {
+      if (annotations[pageNum]) {
+        try {
+          await onSaveAnnotations(annotations[pageNum], pageNum);
+          console.log(`✅ Auto-saved page ${pageNum}`);
+        } catch (error) {
+          console.error("Auto-save failed:", error);
+        }
+      }
+    };
+
+    saveCurrentPageAnnotations();
+  }, [pageNum, annotations[pageNum]]);
+
+  useEffect(() => {
+    const loadPageAnnotations = async () => {
+      if (!scoreId || !onLoadAnnotations) return;
+
+      try {
+        const saved = await onLoadAnnotations(pageNum);
+        if (saved?.annotationsJson && saved.annotationsJson.trim() !== "") {
+          setAnnotations((prev) => ({
+            ...prev,
+            [pageNum]: JSON.parse(saved.annotationsJson),
+          }));
+          console.log(`📂 Loaded saved annotations for page ${pageNum}`);
+        }
+      } catch (error) {
+        console.log("No saved annotations:", error.message);
+      }
+    };
+
+    loadPageAnnotations();
+  }, [scoreId, pageNum]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleExportAndUpload = async () => {
+    try {
+      console.log("1. Iniciando proceso de exportación...");
+
+      // A. Pedir URL firmada a Java
+      const response = await axiosInstance.get(
+        `/api/scores/${scoreId}/annotations/upload-url`,
+      );
+      const { uploadUrl } = response.data;
+
+      // B. Descargar PDF con Seguridad
+      console.log("Descargando copia limpia del PDF...");
+      const pdfResponse = await axiosInstance.get(
+        `/api/scores/${scoreId}/pdf`,
+        {
+          responseType: "arraybuffer",
+        },
+      );
+      const existingPdfBytes = pdfResponse.data;
+
+      // C. Cargar el PDF en pdf-lib
+      const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+      // D. Obtener la imagen de tus dibujos (FabricJS)
+      const fabricCanvas = document.querySelector(".upper-canvas");
+      if (!fabricCanvas) throw new Error("No se encontró el lienzo de dibujo");
+
+      const annotationImageUri = fabricCanvas.toDataURL({
+        format: "png",
+        multiplier: 2,
+      });
+      const annotationImage = await pdfDoc.embedPng(annotationImageUri);
+
+      // E. Pegar la imagen en la página actual
+      const pages = pdfDoc.getPages();
+      const currentPage = pages[pageNum - 1];
+      const { width, height } = currentPage.getSize();
+
+      currentPage.drawImage(annotationImage, {
+        x: 0,
+        y: 0,
+        width: width,
+        height: height,
+      });
+
+      // F. Generar los bytes del nuevo PDF
+      const pdfBytes = await pdfDoc.save();
+
+      console.log("2. Subiendo PDF modificado a S3...");
+
+      // G. Subida a Amazon S3 usando FETCH nativo
+      // Usamos fetch porque NO añade cabeceras de Authorization automáticamente
+      const s3Response = await fetch(uploadUrl, {
+        method: "PUT",
+        body: pdfBytes,
+        headers: {
+          "Content-Type": "application/pdf",
+        },
+      });
+
+      if (!s3Response.ok) {
+        const errorText = await s3Response.text();
+        console.error("Error detalle S3:", errorText);
+        throw new Error(`Amazon S3 rechazó la subida: ${s3Response.status}`);
+      }
+
+      alert("¡Éxito total! Tu partitura con anotaciones ya está en Amazon S3.");
+    } catch (error) {
+      console.error("Error detallado:", error);
+      alert("Error al guardar: " + error.message);
+    }
   };
 
   return (
@@ -180,6 +348,7 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
           backgroundColor: "#b09b77",
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
           padding: "1px 4px",
           borderBottom: "1px solid #5d4037",
           zIndex: 1000,
@@ -210,6 +379,7 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
             setActiveTool(activeTool === "select" ? null : "select")
           }
           onDownload={handleDownload}
+          onSaveToCloud={handleExportAndUpload}
           isDoublePage={isDoublePage}
           onToggleDoublePage={() => setIsDoublePage(!isDoublePage)}
           brushColor={brushColor}
@@ -219,6 +389,23 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
           textProps={textProps}
           onTextPropsChange={setTextProps}
         />
+        <button
+          onClick={onClose}
+          className="minecraft-button small icon"
+          style={{
+            marginLeft: "8px",
+            fontSize: "16px",
+            padding: "0 6px",
+            height: "24px",
+            minWidth: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Close Annotation Editor"
+        >
+          ✕
+        </button>
       </header>
 
       <main
@@ -269,9 +456,10 @@ const PdfAnnotator = ({ pdfUrl, initialPage = 1 }) => {
             scale={scale}
             pageNum={pageNum}
             savedData={annotations[pageNum]}
-            onSaveAnnotations={(json) =>
-              setAnnotations((prev) => ({ ...prev, [pageNum]: json }))
-            }
+            onSaveAnnotations={(json) => {
+              setAnnotations((prev) => ({ ...prev, [pageNum]: json }));
+              saveWithDebounce(json);
+            }}
             brushColor={brushColor}
             brushWidth={brushWidth}
             textProps={textProps}

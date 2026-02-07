@@ -11,6 +11,7 @@ import {
   IconDownload,
   IconFullscreen,
   IconDoublePage,
+  IconCloudUpload,
 } from "./Icons";
 
 const Toolbar = ({
@@ -36,6 +37,7 @@ const Toolbar = ({
   onDownload,
   isDoublePage,
   onToggleDoublePage,
+  onSaveToCloud,
 }) => {
   const presets = [25, 50, 75, 100, 125, 150, 200, 300];
 
@@ -151,11 +153,20 @@ const Toolbar = ({
       {/* 2. HERRAMIENTAS PRINCIPALES */}
       <div style={groupStyle}>
         <ToolButton
-          onClick={onToggleSelect}
+          onClick={onSaveToCloud}
           active={activeTool === "select"}
-          title="Seleccionar"
+          title="Save on cloud"
+          style={{ padding: "6px", color: "#4CAF50" }}
+        >
+          <IconCloudUpload />
+        </ToolButton>
+
+        <ToolButton
+          onClick={onDownload}
+          title="Descargar"
           style={{ padding: "6px" }}
         >
+          <IconDownload />
           <IconSelect />
         </ToolButton>
         <ToolButton

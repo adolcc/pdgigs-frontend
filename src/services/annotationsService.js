@@ -5,15 +5,30 @@ import axiosInstance from "./axiosInstance";
  * payload = { pageNumber, annotationsJson }
  */
 export async function saveAnnotations(scoreId, pageNumber, annotationsJson) {
-  const payload = { pageNumber, annotationsJson };
+  // Asegurar que annotationsJson es string (ya viene stringificado de Fabric)
+  const payload = {
+    pageNumber,
+    annotationsJson:
+      typeof annotationsJson === "string"
+        ? annotationsJson
+        : JSON.stringify(annotationsJson),
+  };
+
+  console.log("💾 Saving annotations:", { scoreId, pageNumber, payload });
+
   try {
     const res = await axiosInstance.post(
       `/api/scores/${encodeURIComponent(scoreId)}/annotations`,
       payload
     );
+    console.log("✅ Save success:", res.data);
     return res.data;
   } catch (err) {
-    console.error("saveAnnotations failed:", err?.message ?? err);
+    console.error("❌ Save failed:", {
+      status: err.response?.status,
+      message: err.response?.data?.message || err.message,
+      data: err.response?.data,
+    });
     throw err;
   }
 }
