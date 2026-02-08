@@ -15,7 +15,7 @@ const UploadPdf = () => {
 
   useEffect(() => {
     if (status?.type === "success") {
-      const id = setTimeout(() => setStatus(null), 2000); 
+      const id = setTimeout(() => setStatus(null), 2000);
       return () => clearTimeout(id);
     }
   }, [status]);
@@ -61,7 +61,9 @@ const UploadPdf = () => {
   return (
     <div className="minecraft-container" style={{ maxWidth: 760 }}>
       <div style={{ textAlign: "center", marginBottom: 8 }}>
-        <div className="pdgigs-logo pdgigs-logo--inline" aria-hidden="true">PDgigs</div>
+        <div className="pdgigs-logo pdgigs-logo--inline" aria-hidden="true">
+          PDgigs
+        </div>
         <h1 style={{ margin: 6 }}>Upload PDF</h1>
       </div>
 
@@ -101,7 +103,10 @@ const UploadPdf = () => {
             <label>Browse for PDF</label>
 
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <label className="file-input-label" style={{ display: "inline-block" }}>
+              <label
+                className="file-input-label"
+                style={{ display: "inline-block" }}
+              >
                 Browse for PDF
                 <input
                   type="file"
@@ -111,17 +116,28 @@ const UploadPdf = () => {
                 />
               </label>
 
-              <span className="file-input-name" style={{ color: "var(--row-text)" }}>
+              <span
+                className="file-input-name"
+                style={{ color: "var(--row-text)" }}
+              >
                 {file ? file.name : "No file selected"}
               </span>
             </div>
           </div>
 
           <div className="edit-actions form-actions" style={{ marginTop: 12 }}>
-            <button type="submit" className="minecraft-button save-btn" disabled={submitting}>
+            <button
+              type="submit"
+              className="minecraft-button save-btn"
+              disabled={submitting}
+            >
               {submitting ? "Uploading..." : "Upload PDF"}
             </button>
-            <button type="button" className="minecraft-button cancel-btn" onClick={() => navigate("/my-scores")}>
+            <button
+              type="button"
+              className="minecraft-button cancel-btn"
+              onClick={() => navigate("/my-scores")}
+            >
               Cancel
             </button>
           </div>
